@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+const BASE_URL = "airy-reverence-production.up.railway.app";
+
 function App() {
   const [mode, setMode] = useState('welcome'); 
   const [user, setUser] = useState(null); 
@@ -12,7 +14,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const ambilMenu = () => {
-    fetch('http://localhost:5000/api/menu')
+    fetch('airy-reverence-production.up.railway.app/api/menu')
       .then(res => res.json())
       .then(data => setMenu(data))
       .catch(err => console.error("Gagal ambil menu:", err));
@@ -26,7 +28,7 @@ function App() {
 
   const handleAdminLogin = async (passwordInput) => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/login', {
+      const response = await fetch('airy-reverence-production.up.railway.app/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: passwordInput })
@@ -76,7 +78,7 @@ function App() {
     formData.append('total', totalHarga);
     formData.append('bukti', file);
     try {
-      const response = await fetch("http://localhost:5000/api/pesan", { method: "POST", body: formData });
+      const response = await fetch("airy-reverence-production.up.railway.app/api/pesan", { method: "POST", body: formData });
       if (response.ok) {
         alert("Pesanan Berhasil!");
         setKeranjang([]);
@@ -202,7 +204,7 @@ function OwnerDashboard({ setMode, user }) {
   // 2. Fungsi untuk mengambil data cabang asli dari Database
   const ambilCabang = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/daftar-cabang');
+      const res = await fetch('airy-reverence-production.up.railway.app/api/admin/daftar-cabang');
       const data = await res.json();
       setCabang(data);
     } catch (err) {
@@ -218,7 +220,7 @@ function OwnerDashboard({ setMode, user }) {
   const handleTambahCabang = async () => {
     if (!cabangBaru) return alert("Isi nama cabang dulu!");
     try {
-      const response = await fetch('http://localhost:5000/api/admin/cabang', {
+      const response = await fetch('airy-reverence-production.up.railway.app/api/admin/cabang', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nama_cabang: cabangBaru })
@@ -309,8 +311,8 @@ function AdminDashboard({ setMode, user }) {
   const [view, setView] = useState('pesanan');
 
   const ambilData = () => {
-    fetch('http://localhost:5000/api/admin/pesanan').then(res => res.json()).then(setPesanan);
-    fetch('http://localhost:5000/api/admin/inventory').then(res => res.json()).then(setInventory);
+    fetch('airy-reverence-production.up.railway.app/api/admin/pesanan').then(res => res.json()).then(setPesanan);
+    fetch('airy-reverence-production.up.railway.app/api/admin/inventory').then(res => res.json()).then(setInventory);
   };
 
   useEffect(() => {
@@ -322,7 +324,7 @@ function AdminDashboard({ setMode, user }) {
   const handleSelesai = async (id) => {
     if (!window.confirm("Yakin pesanan ini sudah selesai dan ingin dihapus?")) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/pesanan/${id}`, {
+      const response = await fetch(`airy-reverence-production.up.railway.app/api/admin/pesanan/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -336,7 +338,7 @@ function AdminDashboard({ setMode, user }) {
 
   const handleUpdateStok = async (id, nilaiBaru) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/update-stok/${id}`, {
+      const response = await fetch(`airy-reverence-production.up.railway.app/api/admin/update-stok/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jumlah: nilaiBaru })
@@ -387,7 +389,7 @@ function AdminDashboard({ setMode, user }) {
                           <button 
                             className="btn-add" 
                             style={{ padding: '5px 10px', fontSize: '0.8rem', background: '#444' }}
-                            onClick={() => window.open(`http://localhost:5000/uploads/${p.bukti_transfer}`, '_blank')}
+                            onClick={() => window.open(`airy-reverence-production.up.railway.app/uploads/${p.bukti_transfer}`, '_blank')}
                           >
                             🖼️ Bukti
                           </button>
