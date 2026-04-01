@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-const BASE_URL = "airy-reverence-production.up.railway.app";
+const BASE_URL = "https://airy-reverence-production.up.railway.app";
 
 function App() {
   const [mode, setMode] = useState('welcome'); 
