@@ -10,21 +10,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Konfigurasi Database
+// 1. Konfigurasi Database (MENGGUNAKAN NEON CLOUD)
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'teakita_db', 
-  password: process.env.DB_PASSWORD,
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Wajib untuk koneksi Neon/Render
+  }
 });
 
 // Cek koneksi database saat startup
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.log("❌ KONEKSI DATABASE GAGAL:", err.message);
+    console.log("Tip: Pastikan DATABASE_URL di .env sudah benar dan pakai tanda petik.");
   } else {
-    console.log("✅ DATABASE TERHUBUNG!");
+    console.log("✅ DATABASE TERHUBUNG (NEON CLOUD)!");
   }
 });
 
@@ -65,7 +65,8 @@ app.post('/api/admin/login', async (req, res) => {
         } 
       });
     } else {
-      if (password === process.env.ADMIN_PASSWORD) {
+      // Backup jika .env ADMIN_PASSWORD diset
+      if (process.env.ADMIN_PASSWORD && password === process.env.ADMIN_PASSWORD) {
         return res.json({ success: true, user: { role: 'admin', nama: 'Admin Backup' } });
       }
       res.status(401).json({ success: false, pesan: "Password Salah!" });
@@ -95,13 +96,12 @@ app.get('/api/admin/inventory', async (req, res) => {
   }
 });
 
-// PERBAIKAN: Fitur Update Stok
+// Fitur Update Stok
 app.put('/api/admin/update-stok/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { jumlah } = req.body; 
-    
-    // Memastikan jumlah adalah angka agar database tidak menolak
+
     const nilaiStok = parseInt(jumlah);
 
     const result = await pool.query(
@@ -161,12 +161,11 @@ app.get('/api/admin/pesanan', async (req, res) => {
   }
 });
 
-// PERBAIKAN: Fitur Selesai/Hapus Pesanan
+// Fitur Selesai/Hapus Pesanan
 app.delete('/api/admin/pesanan/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Menggunakan parseInt untuk memastikan ID adalah angka (tipe SERIAL/INT di DB)
+
     const result = await pool.query("DELETE FROM pesanan WHERE id = $1", [parseInt(id)]);
     
     if (result.rowCount > 0) {
@@ -226,7 +225,7 @@ app.put('/api/admin/pindah-karyawan', async (req, res) => {
 });
 
 // --- 4. JALANKAN SERVER ---
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("-----------------------------------------");
   console.log(`Server Tea_kita running on port ${PORT}`);
