@@ -35,7 +35,7 @@ pool.query('SELECT NOW()', (err, res) => {
 // 2. Setting Penyimpanan Gambar (Multer)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true }); // Tambahkan { recursive: true }
 }
 
 const storage = multer.diskStorage({
@@ -126,31 +126,45 @@ app.put('/api/admin/update-stok/:id', async (req, res) => {
 
 // --- FITUR PESANAN ---
 app.post('/api/pesan', upload.single('bukti'), async (req, res) => {
+  console.log("--- REQUEST MASUK ---");
+  console.log("Body:", req.body);
+  console.log("File:", req.file);
+
   const client = await pool.connect();
   try {
     const { pembeli, detail, total } = req.body;
     const namaFileGambar = req.file ? req.file.filename : null;
 
+    // Cek apakah data penting ada
+    if (!pembeli || !detail) {
+      console.log("❌ DATA TIDAK LENGKAP");
+      return res.status(400).json({ success: false, pesan: "Data pembeli atau detail kosong" });
+    }
+
     await client.query('BEGIN');
 
     const order = await client.query(
       "INSERT INTO pesanan (nama_pembeli, detail_pesanan, total_harga, bukti_transfer) VALUES($1, $2, $3, $4) RETURNING *",
-      [pembeli, detail, total, namaFileGambar]
+      [pembeli, detail, total || 0, namaFileGambar]
     );
 
+    // Update stok (pastikan detail ada isinya)
     const itemPesanan = detail.split(", ");
     for (let namaTeh of itemPesanan) {
       await client.query(
-        "UPDATE daftar_teh SET stok = stok - 1 WHERE nama_teh = $1 AND stok > 0",
+        "UPDATE daftar_teh SET stok = GREATEST(stok - 1, 0) WHERE nama_teh = $1",
         [namaTeh.trim()]
       );
     }
 
     await client.query('COMMIT');
-    res.json(order.rows[0]);
+    console.log("✅ PESANAN BERHASIL DISIMPAN");
+    res.json({ success: true, data: order.rows[0] });
+
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).send("Gagal memproses pesanan");
+    console.error("❌ ERROR SERVER:", err.message);
+    res.status(500).json({ success: false, error: err.message });
   } finally {
     client.release();
   }

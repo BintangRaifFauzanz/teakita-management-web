@@ -14,7 +14,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const ambilMenu = () => {
-    fetch('https://airy-reverence-production.up.railway.app/api/menu')
+    fetch('${BASE_URL}/api/menu')
       .then(res => res.json())
       .then(data => setMenu(data))
       .catch(err => console.error("Gagal ambil menu:", err));
@@ -28,7 +28,7 @@ function App() {
 
   const handleAdminLogin = async (passwordInput) => {
     try {
-      const response = await fetch('https://airy-reverence-production.up.railway.app/api/admin/login', {
+      const response = await fetch('${BASE_URL}/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: passwordInput })
@@ -78,7 +78,7 @@ function App() {
     formData.append('total', totalHarga);
     formData.append('bukti', file);
     try {
-      const response = await fetch("https://airy-reverence-production.up.railway.app/api/pesan", { method: "POST", body: formData });
+      const response = await fetch("${BASE_URL}/api/pesan", { method: "POST", body: formData });
       if (response.ok) {
         alert("Pesanan Berhasil!");
         setKeranjang([]);
@@ -389,7 +389,7 @@ function AdminDashboard({ setMode, user }) {
                           <button 
                             className="btn-add" 
                             style={{ padding: '5px 10px', fontSize: '0.8rem', background: '#444' }}
-                            onClick={() => window.open(`https://airy-reverence-production.up.railway.app/uploads/${p.bukti_transfer}`, '_blank')}
+                            onClick={() => window.open(`${BASE_URL}/uploads/${p.bukti_transfer}`, '_blank')}
                           >
                             🖼️ Bukti
                           </button>
